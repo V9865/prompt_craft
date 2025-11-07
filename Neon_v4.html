@@ -1,0 +1,228 @@
+from pathlib import Path
+
+html_v4 = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NeoCity Portal</title>
+<style>
+.glitch {
+  position: relative;
+  color: #0ff;
+}
+.glitch:before, .glitch:after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  clip: rect(0, 900px, 0, 0);
+}
+.glitch:before {animation: glitchTop 2s infinite linear alternate-reverse; color: #f0f;}
+.glitch:after {animation: glitchBottom 1.5s infinite linear alternate-reverse; color: #0f0;}
+@keyframes glitchTop {0%{clip:rect(0,9999px,0,0);}50%{clip:rect(0,9999px,50px,0);}100%{clip:rect(0,9999px,0,0);}}
+@keyframes glitchBottom {0%{clip:rect(50px,9999px,100px,0);}50%{clip:rect(0,9999px,100px,0);}100%{clip:rect(50px,9999px,100px,0);}}
+html, body {
+  margin:0; padding:0; height:100%; width:100%;
+  overflow:hidden;
+  font-family: 'Courier New', monospace;
+  color:#0ff;
+}
+#backdrop {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: url('create a cyberpunk n.png') no-repeat center center;
+  background-size: cover;
+  animation: zoom 60s linear infinite alternate;
+  z-index: -2;
+}
+@keyframes zoom {from{transform:scale(1);}to{transform:scale(1.1);}}
+canvas {position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;}
+#content {position:relative; z-index:10; text-align:center; padding-top:10%;}
+h1 {font-size:3em; text-shadow:0 0 10px #0ff, 0 0 20px #f0f;}
+button {
+  background:transparent; border:2px solid #0ff; color:#0ff; padding:10px 20px;
+  margin-top:20px; cursor:pointer; transition:0.2s;
+}
+button:hover {background:#0ff; color:#000;}
+input, select {
+  background:rgba(0,0,0,0.4); border:1px solid #0ff; color:#0ff; padding:8px; width:200px;
+  border-radius:5px; outline:none; text-align:center; transition:0.2s;
+}
+input:focus, select:focus {box-shadow:0 0 10px #0ff;}
+.error {color:#ff7070; text-shadow:0 0 6px #f00; margin-top:10px;}
+.profile-card {
+  background:rgba(0,0,0,0.5); border:1px solid #0ff; border-radius:10px; padding:25px; display:inline-block;
+  margin-top:25px; box-shadow:0 0 10px #0ff; max-width:420px;
+  line-height:1.6em; word-spacing:3px;
+}
+.role-title {color:#f0f; font-size:1.5em; margin-top:12px;}
+.role-lore {color:#0ff; font-size:1em; margin-top:12px;}
+.traits {color:#7ff; font-size:0.95em; margin-top:12px;}
+#transition {
+  position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9);
+  color:#0ff; font-size:1.5em; text-align:center; display:none; z-index:50;
+  flex-direction:column; justify-content:center; align-items:center;
+}
+.transition-line {opacity:0; animation: fadeInOut 3s linear forwards;}
+@keyframes fadeInOut {
+  0%{opacity:0;} 20%{opacity:1;} 80%{opacity:1;} 100%{opacity:0;}
+}
+#musicControls {
+  position:fixed; bottom:10px; right:10px; z-index:20;
+  background:rgba(0,0,0,0.5); border:1px solid #0ff; border-radius:8px; padding:6px 10px;
+  font-size:0.9em; color:#0ff; cursor:pointer;
+}
+#musicControls:hover {background:#0ff; color:#000;}
+</style>
+</head>
+<body>
+<div id="content">
+  <h1 id="intro" class="glitch" data-text="NEOCITY NODE">NEOCITY NODE</h1>
+  <button id="enterBtn" onclick="initPortal()">Enter Portal</button>
+
+  <div id="form" style="display:none;">
+    <h2>Recruitment Protocol</h2>
+    <input id="alias" placeholder="Alias"><br><br>
+    <input id="age" type="number" placeholder="Age"><br><br>
+    <select id="skill">
+      <option value="tech">Tech Savvy</option>
+      <option value="combat">Combat Trained</option>
+      <option value="tactical">Tactical Thinker</option>
+      <option value="stealth">Stealth Operative</option>
+      <option value="medical">Medical Specialist</option>
+    </select><br><br>
+    <select id="philosophy">
+      <option value="chaos">Chaos</option>
+      <option value="order">Order</option>
+      <option value="profit">Profit</option>
+      <option value="freedom">Freedom</option>
+    </select><br><br>
+    <select id="risk">
+      <option value="low">Low Risk</option>
+      <option value="high">High Risk</option>
+      <option value="reckless">Reckless</option>
+    </select><br><br>
+    <select id="augmentation">
+      <option value="cybernetic">Cybernetic</option>
+      <option value="organic">Organic</option>
+      <option value="hybrid">Hybrid</option>
+    </select><br><br>
+    <select id="affiliation">
+      <option value="street">Street Clan</option>
+      <option value="corporate">Corporate</option>
+      <option value="nomad">Nomad</option>
+      <option value="lone">Lone Wolf</option>
+    </select><br><br>
+    <select id="loyalty">
+      <option value="true">Loyal</option>
+      <option value="merc">Mercenary</option>
+      <option value="traitor">Opportunist</option>
+    </select><br><br>
+    <button onclick="assignGang()">Submit</button>
+    <button onclick="goHome()">Back to Home</button>
+    <div id="error" class="error"></div>
+  </div>
+
+  <div id="result" style="display:none;"></div>
+</div>
+<div id="backdrop"></div>
+<canvas id="rain"></canvas>
+<div id="transition">
+  <div class="transition-line" style="animation-delay:0s;">Initializing neural interface...</div>
+  <div class="transition-line" style="animation-delay:3s;">Establishing secure uplink to NeoCity Grid...</div>
+  <div class="transition-line" style="animation-delay:6s;">Decrypting credentials... Access granted.</div>
+</div>
+<div id="musicControls" onclick="toggleMusic()" style="display:none;">🔊 Play</div>
+<audio id="bgm" src="neon_drive.mp3" loop></audio>
+
+<script>
+let audio=document.getElementById('bgm');
+let ctrl=document.getElementById('musicControls');
+
+function initPortal(){
+  document.getElementById('enterBtn').style.display='none';
+  document.getElementById('intro').style.display='none';
+  const trans=document.getElementById('transition');
+  trans.style.display='flex';
+  setTimeout(()=>{
+    trans.style.display='none';
+    document.getElementById('form').style.display='block';
+    ctrl.style.display='block';
+    playMusic();
+  },9000);
+}
+
+function playMusic(){
+  audio.play().then(()=>{ctrl.innerText='🔇 Pause';}).catch(()=>{});
+}
+function toggleMusic(){
+  if(audio.paused){audio.play();ctrl.innerText='🔇 Pause';}
+  else{audio.pause();ctrl.innerText='🔊 Play';}
+}
+
+function goHome(){
+  document.getElementById('form').style.display='none';
+  document.getElementById('result').style.display='none';
+  document.getElementById('intro').style.display='block';
+  document.getElementById('enterBtn').style.display='inline-block';
+}
+function goBack(){
+  document.getElementById('result').style.display='none';
+  document.getElementById('form').style.display='block';
+}
+function assignGang(){
+  let alias=document.getElementById('alias').value.trim();
+  let age=document.getElementById('age').value.trim();
+  if(!alias||!age){document.getElementById('error').innerText="⚠️ Please enter both Alias and Age!";return;}
+  document.getElementById('error').innerText='';
+
+  let skill=document.getElementById('skill').value;
+  let philosophy=document.getElementById('philosophy').value;
+  let risk=document.getElementById('risk').value;
+  let augmentation=document.getElementById('augmentation').value;
+  let affiliation=document.getElementById('affiliation').value;
+  let loyalty=document.getElementById('loyalty').value;
+
+  let roleData=pickRole(skill,augmentation,affiliation,risk,philosophy,loyalty);
+  let card=`<div class='profile-card'>
+      <div class='role-title'>${alias}, aged ${age}</div>
+      <div class='role-lore'><strong>${roleData.title}</strong><br>${roleData.lore}</div>
+      <div class='traits'>Skill: ${skill} | Augmentation: ${augmentation} | Affiliation: ${affiliation}<br>
+      Philosophy: ${philosophy} | Risk: ${risk} | Loyalty: ${loyalty}</div><br>
+      <button onclick='goBack()'>Go Back</button>
+      <button onclick='goHome()'>Home</button>
+    </div>`;
+  document.getElementById('form').style.display='none';
+  let res=document.getElementById('result'); res.innerHTML=card; res.style.display='block';
+}
+function pickRole(skill,augmentation,affiliation,risk,philosophy,loyalty){
+  const roleTemplates={
+    tech:{cybernetic:{street:["Neon Netwatcher","Splicing into street-level grids."],corporate:["Neural Architect","Designing data fortresses."],
+    nomad:["Signal Drifter","Connecting wasteland signals."],lone:["Ghostcoder","Living between firewalls."]}},
+    combat:{cybernetic:{street:["Chrome Warlord","You rule alleys with cybernetic fists."],corporate:["Corporate Merc","Precision strikes for profit."],
+    nomad:["Wasteland Charger","Riding chaos through dust."],lone:["Solo Blade","Paid in secrets."]}},
+    tactical:{cybernetic:{street:["Warfare Architect","You design battles like art."],corporate:["Neon Commander","The grid obeys you."],
+    nomad:["Route Planner","Safe paths through war."],lone:["Strat Ghost","Unseen strategist."]}},
+    stealth:{cybernetic:{street:["Shadow Runner","Unseen, unstoppable."],corporate:["Glass Whisper","Silent infiltrator."],
+    nomad:["Dust Shade","The desert ghost."],lone:["Night Wraith","Rumor and silence."]}},
+    medical:{cybernetic:{street:["Neuro Surgeon","Healing with wires."],corporate:["Biomedical Liaison","Secret corporate healer."],
+    nomad:["Field Medic","Keeping nomads alive."],lone:["Gray Surgeon","Fixer of forgotten souls."]}}
+  };
+  let base=(roleTemplates[skill]||roleTemplates.tech).cybernetic[affiliation]||["Neon Drifter","Wandering the circuits."];
+  let title=base[0],lore=base[1];
+  if(risk==='reckless')title="Rogue "+title;if(risk==='high')title="Veteran "+title;
+  if(philosophy==='profit')title="Mercantile "+title;if(philosophy==='order')title="Consular "+title;if(philosophy==='freedom')title="Freeborn "+title;
+  if(loyalty==='merc')lore+=" You sell your skills to the highest bidder.";if(loyalty==='traitor')lore+=" Loyalty is a myth to you.";
+  return {title,lore};
+}
+const canvas=document.getElementById('rain');const ctx=canvas.getContext('2d');
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}window.addEventListener('resize',resize);resize();
+let drops=[];for(let i=0;i<200;i++){drops.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,len:10+Math.random()*20,speed:4+Math.random()*4});}
+function drawRain(){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.strokeStyle='rgba(0,255,255,0.3)';ctx.lineWidth=2;
+  drops.forEach(d=>{ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.lineTo(d.x,d.y+d.len);ctx.stroke();d.y+=d.speed;if(d.y>canvas.height)d.y=-20;});
+  requestAnimationFrame(drawRain);}drawRain();
+</script>
+</body>
+</html>"""
+
+
