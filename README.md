@@ -1,1 +1,2 @@
-# prompt_craft
+# About the project
+## Save all 3 files in the same folder and open the website file named Neon_v4.html. Once u open the file u can click on the "Enter Portal", you will then be directed to the "Recruitment Protocol" page after verfication upon which you can fill the details to get assigned a role in the gang(beware that if u dont fill all the details you wont be assigned a role and wont be able to move to the next page).
